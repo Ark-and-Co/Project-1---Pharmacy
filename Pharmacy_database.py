@@ -691,13 +691,13 @@ def account_account_now():
     accounting_window = Tk()
 
     accounting_tree_frame = Frame(accounting_window)
-    accounting_tree_frame.grid(row=0, column=0, padx=20, pady=20)
+    accounting_tree_frame.grid(row=0, column=1, padx=20)
 
     accounting_details_frame = LabelFrame(accounting_window, text='Accounting Details')
-    accounting_details_frame.grid(row=1, column=0, padx=20, pady=20)
+    accounting_details_frame.grid(row=0, column=0, padx=20)
 
     accounting_prices_frame = LabelFrame(accounting_window, text='Accounting Specifics')
-    accounting_prices_frame.grid(row=1, column=1, padx=20, pady=20)
+    accounting_prices_frame.grid(row=1, column=0, padx=20)
 
     accounting_tree_scroll = Scrollbar(accounting_tree_frame)
     accounting_tree_scroll.pack(side=RIGHT, fill=Y)
@@ -892,37 +892,94 @@ def account_account_now():
 
     total = drops_total + fee
 
+    def cash_now(e):
+        cash = accounting_detail_given_cash_box.get()
+        accounting_detail_given_cash_box.delete(0,END)
+        try:
+            cash = int(cash)
+        except Exception:
+            messagebox.showinfo('Input Error','Enter an valid integer')
+            return
+
+        accounting_detail_balance_label = Label(accounting_details_frame, text=f'         Balance  : {total} - {cash} =      ')
+        accounting_detail_balance_label.grid(row=2, column=0, padx=20, pady=20)
+
+        accounting_detail_balance = Label(accounting_details_frame, text=f'      {total - cash}     ')
+        accounting_detail_balance.grid(row=2, column=1, padx=20, pady=20)
+
+
     # Accounting details frame ------------------------------------------
+    accounting_detail_given_cash_label = Label(accounting_details_frame,text="Cash Given  : ")
+    accounting_detail_given_cash_label.grid(row=0, column=0, padx=20, pady=20)
+
+    accounting_detail_given_cash_box = Entry(accounting_details_frame)
+    accounting_detail_given_cash_box.grid(row=0, column=1, padx=20, pady=20)
+
+    accounting_detail_given_cash_box.bind('<Return>',cash_now)
+
     accounting_detail_total_label = Label(accounting_details_frame, text='Total Price  : ')
-    accounting_detail_total_label.grid(row=0, column=0, padx=20, pady=20)
+    accounting_detail_total_label.grid(row=1, column=0, padx=20, pady=20)
 
     accounting_detail_total = Label(accounting_details_frame, text=total)
-    accounting_detail_total.grid(row=0, column=1, padx=20, pady=20)
+    accounting_detail_total.grid(row=1, column=1, padx=20, pady=20)
+
+    accounting_detail_balance_label = Label(accounting_details_frame, text=f'Balance  : {total} - Cash Given = ')
+    accounting_detail_balance_label.grid(row=2, column=0, padx=20, pady=20)
+
+    accounting_detail_balance = Label(accounting_details_frame, text=" ")
+    accounting_detail_balance.grid(row=2, column=1, padx=20, pady=20)
+
 
     accounting_patient_name_label = Label(accounting_details_frame, text="Patient Name: ")
-    accounting_patient_name_label.grid(row=1, column=0, padx=20, pady=20)
+    accounting_patient_name_label.grid(row=3, column=0, padx=20, pady=20)
 
     accounting_patient_name_box = Entry(accounting_details_frame)
-    accounting_patient_name_box.grid(row=1, column=1, padx=20, pady=20)
+    accounting_patient_name_box.grid(row=3, column=1, padx=20, pady=20)
 
     accounting_go_back_button = Button(accounting_details_frame, text='Go back', command=go_back)
-    accounting_go_back_button.grid(row=3, column=0, padx=20, pady=20)
+    accounting_go_back_button.grid(row=4, column=0, padx=20, pady=20)
 
     accounting_commit_button = Button(accounting_details_frame, text='Commit now', command=commit_now)
-    accounting_commit_button.grid(row=3, column=1, padx=20, pady=20)
+    accounting_commit_button.grid(row=4, column=1, padx=20, pady=20)
 
     # Accounting Prices frame ------------------------------------------
-    accounting_detail_total_label = Label(accounting_prices_frame, text='Drops Total: ')
-    accounting_detail_total_label.grid(row=0, column=0, padx=20, pady=20)
 
-    accounting_detail_total = Label(accounting_prices_frame, text=drops_total)
-    accounting_detail_total.grid(row=0, column=1, padx=20, pady=20)
+    count_per_transaction = 0
+    for count in unique_count:
+        count_per_transaction = count_per_transaction + count
 
-    accounting_total_cost_label = Label(accounting_prices_frame, text='Total price (Drops + Fee) : ')
-    accounting_total_cost_label.grid(row=1, column=0, padx=20, pady=20)
+    accounting_detail_drops_count_label = Label(accounting_prices_frame,
+                                                text=f'No of drops: {count_per_transaction}')
+    accounting_detail_drops_count_label.grid(row=0, column=0, padx=20, pady=20)
 
-    accounting_total_cost = Label(accounting_prices_frame, text=f'{drops_total} + {fee} = {drops_total + fee}')
-    accounting_total_cost.grid(row=1, column=1, padx=20, pady=20)
+    accounting_detail_drops_total_label = Label(accounting_prices_frame, text=f'Drops Total: {drops_total}')
+    accounting_detail_drops_total_label.grid(row=1, column=0, padx=20, pady=20)
+
+    accounting_total_cost_label = Label(accounting_prices_frame, text=f'Total price (Drops + Fee) : {drops_total} + {fee} = {drops_total + fee}')
+    accounting_total_cost_label.grid(row=2, column=0, padx=20, pady=20)
+
+    accounting_total_change_500_label = Label(accounting_prices_frame, text=f'500 : {500 - total} ')
+    accounting_total_change_500_label.grid(row=3, column=0, padx=20)
+    accounting_total_change_500_label.config(background='yellow')
+
+    accounting_total_change_1000_label = Label(accounting_prices_frame, text=f'1000 :  {1000 - total} ')
+    accounting_total_change_1000_label.grid(row=4, column=0, padx=20)
+    accounting_total_change_1000_label.config(background='red')
+
+    accounting_total_change_1500_label = Label(accounting_prices_frame, text=f'1500 :  {1500 - total}')
+    accounting_total_change_1500_label.grid(row=5, column=0, padx=20)
+    accounting_total_change_1500_label.config(background='yellow')
+
+    accounting_total_change_2000_label = Label(accounting_prices_frame, text=f'2000 :  {2000 - total}')
+    accounting_total_change_2000_label.grid(row=6, column=0, padx=20)
+    accounting_total_change_2000_label.config(background='red')
+
+    accounting_total_change_2500_label = Label(accounting_prices_frame, text=f'2500 :  {2500 - total}')
+    accounting_total_change_2500_label.grid(row=7, column=0, padx=20)
+    accounting_total_change_2500_label.config(background='yellow')
+
+
+
 
     accounting_window.mainloop()
 
