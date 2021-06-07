@@ -1,0 +1,1 @@
+pyinstaller --onefile -w Pharmacy_database.py
