@@ -6,16 +6,114 @@ from datetime import datetime
 import pandas as pd
 import sqlite3
 
-main_window = Tk()
-main_window.title('Database Pharmacy')
-background_color = 'lightblue'
-main_window.geometry('1920x1080')
+'''
+Root Window:
+    main_frame:
+        my_canvas:
+            main_window:
+                search_frame:
+                    search_label
+                    search_box
+                    search_now_button
+                    lable1_label
+                database_tree_frame:
+                    database_tree
+                record_frame:
+                    ID_label
+                    id_entry_box
+                    medicine_name_label
+                    medicine_name_box
+                    medicine_Stock_label
+                    medicine_stock_box
+                    medicine_price_label
+                    medicine_price_box
+                commands_frame:
+                    update_button
+                    add_record_button
+                    remove_one_button
+                    clear_button
+                account_search_frame:
+                    account_search_label
+                    account_search_box
+                    account_count_label
+                    account_count_box
+                    label2_label
+                account_tree_frame:
+                    account_tree
+                account_details_frame:
+                    remove one button
+                    account_now_button:
+                        accounting_window:
+                            accounting_details_frame:
 
+                            accounting_tree_frame:
+                                accounting_tree
+                            accounting_prices_frame:
+
+                transaction_register_frame:
+                    open transaction register_button:
+                        transaction register window:
+                            daily_transaction_tree_Frame:
+                                daily_transaction_tree
+                            daily_date_tree_frame:
+                                daily_date_tree
+                            all_transaction_tree_frame:
+                                all_transaction_tree
+                            monthly_date_tree_frame:
+                                monthly_date_tree
+                            year_date_tree_frame:
+                                year_date_tree
+                            medicine_database_view_tree_frame:
+                                medicine_database_view_tree
+                            button_frame:
+                                refresh_now_button
+                                drop_box_asc_desc
+                                drop_box_name_count_price
+'''
+# ---------------------------------------------<Root Window>------------------------------------------------------------
+root = Tk()
+root.title('Database Pharmacy')
+background_color = 'lightblue'
+root.geometry('1920x1080')
+# Create A Main Frame
+main_frame = Frame(root)
+main_frame.pack(fill=BOTH, expand=1)
+
+# Create A Canvas
+my_canvas = Canvas(main_frame)
+my_canvas.configure(background=background_color)
+my_canvas.pack(side=LEFT, fill=BOTH, expand=1)
+
+# Add A Scrollbar To The Canvas
+my_scrollbar_y = ttk.Scrollbar(main_frame, orient=VERTICAL, command=my_canvas.yview)
+my_scrollbar_y.pack(side=RIGHT, fill=Y)
+
+# Configure The Canvas
+my_canvas.configure(yscrollcommand=my_scrollbar_y.set)
+my_canvas.bind('<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox("all")))
+
+
+def _on_mouse_wheel(event):
+    my_canvas.yview_scroll(-1 * int((event.delta / 120)), "units")
+
+
+my_canvas.bind_all("<MouseWheel>", _on_mouse_wheel)
+
+# Create ANOTHER Frame INSIDE the Canvas
+main_window = Frame(my_canvas)
 main_window.configure(background=background_color)
+
+# Add that New frame To a Window In The Canvas
+my_canvas.create_window((0, 0), window=main_window, anchor="nw")
+# ---------------------------------------------</Root window>-----------------------------------------------------------
+# ---------------------------------------------<Global variables>-------------------------------------------------------
 transaction_details = []
 item_id = []
 medicine_data_path = 'medicine_data.csv'
 transaction_data_path = 'transaction_data.csv'
+
+# ---------------------------------------------</Global variables>------------------------------------------------------
+# ---------------------------------------------<Transactions Database commit>-------------------------------------------
 
 
 def transaction_commit():
@@ -56,9 +154,9 @@ def transaction_commit():
         messagebox.showinfo('File Open', 'Close your file to view saved data!')
 
     return
+# ---------------------------------------------</Transactions Database commit>------------------------------------------
+# ---------------------------------------------<Medicine/Transactions Database INIT>------------------------------------
 
-
-# SQLStuff ------------------------------------------------------------------------------------------------------------
 
 conn = sqlite3.connect('pharmacy.db')
 cursor = conn.cursor()
@@ -74,27 +172,9 @@ transaction_id text,
 transaction_count text,
 transaction_total integer)''')
 
-
 conn.close()
-
-
-# SQL Stuff -------------------------------------------------------------------------------------------------------
-def delete_table(tablename):
-    conn = sqlite3.connect('pharmacy.db')
-    cursor = conn.cursor()
-    cursor.execute(f"DROP TABLE {tablename}")
-    print(f'Deleted Table {tablename}')
-    conn.close()
-
-
-def insert_sql(id, name, stock, price):
-    conn = sqlite3.connect('pharmacy.db')
-    cursor = conn.cursor()
-    sql = "INSERT INTO medicine VALUES ( ? , ? , ? , ? )"
-    val = (id, name, stock, price)
-    cursor.execute(sql, val)
-    conn.commit()
-    conn.close()
+# ---------------------------------------------</Medicine/Transactions Database INIT>-----------------------------------
+# ---------------------------------------------<Medicine Database SQL Functions>----------------------------------------
 
 
 def show_table():
@@ -125,7 +205,6 @@ def update_row(id, name, stock, price):
 show_table()
 
 
-# SQL Stuff -------------------------------------------------------------------------------------------------
 def query_database():
     global item_id
     item_id.clear()
@@ -173,25 +252,10 @@ def query_database():
     except Exception:
         messagebox.showinfo('File Open', 'Close your file to view saved data!')
 
+# ---------------------------------------------</Medicine Database SQL Functions>---------------------------------------
+#  -------------------------------------------------<Main window Frames>------------------------------------------------
 
-# Add Some Style
-style = ttk.Style()
 
-# Pick A Theme
-style.theme_use('default')
-
-# Configure the Treeview Colors
-style.configure("Treeview",
-                background="#D3D3D3",
-                foreground="black",
-                rowheight=25,
-                fieldbackground="#D3D3D3")
-
-# Change Selected Color
-style.map('Treeview',
-          background=[('selected', "#347083")])
-# SQL Stuff ---------------------------------------------------------------------------------------------------------
-#  -------------------------------------------------FRAMES-----------------------------------------------------------------------------------
 tree_frame = Frame(main_window)
 tree_frame.grid(row=1, column=0, padx=20)
 tree_frame.configure(background=background_color)
@@ -226,14 +290,26 @@ transaction_register_frame = LabelFrame(main_window, text="Transaction Register"
 transaction_register_frame.grid(row=3, column=1, pady=20, padx=20)
 transaction_register_frame.configure(background=background_color)
 
-'''label_frame = LabelFrame(main_window, text="Label Frame")
-label_frame.grid(row=0, column=2, pady=20, padx=20)
-label_frame.configure(background=background_color)'''
-# FRAMES ---------------------------------------------------------------------------------------------------------
-# DATABASE TREE Stuff --------------------------------------------------------------------------------------------
-# Create a Treeview Frame
+#  -------------------------------------------------</Main window Frames>-----------------------------------------------
+#  -------------------------------------------------<Database Treeview options>-----------------------------------------
 
-# Create a Treeview Scrollbar
+# Add Some Style
+style = ttk.Style()
+
+# Pick A Theme
+style.theme_use('default')
+
+# Configure the Treeview Colors
+style.configure("Treeview",
+                background="#D3D3D3",
+                foreground="black",
+                rowheight=25,
+                fieldbackground="#D3D3D3")
+
+# Change Selected Color
+style.map('Treeview',
+          background=[('selected', "#347083")])
+
 database_tree_scroll = Scrollbar(tree_frame)
 database_tree_scroll.pack(side=RIGHT, fill=Y)
 
@@ -264,56 +340,12 @@ database_tree.heading("Medicine Price", text="Medicine Price", anchor=CENTER)
 # Create Striped Row Tags
 database_tree.tag_configure('oddrow', background="white")
 database_tree.tag_configure('evenrow', background="lightblue")
+#  -------------------------------------------------</Database Treeview options>----------------------------------------
+#  -------------------------------------------------<Database Treeview functions>---------------------------------------
 
-# Add Record Entry Boxes
-
-id_label = Label(data_frame, text="ID  : ")
-id_label.grid(row=0, column=0, padx=10, pady=10)
-id_label.configure(background=background_color)
-
-id_entry_box = Entry(data_frame)
-id_entry_box.grid(row=0, column=1, padx=10, pady=10)
-
-name_label = Label(data_frame, text="Medicine Name  : ")
-name_label.grid(row=0, column=2, padx=10, pady=10)
-name_label.configure(background=background_color)
-
-name_entry_box = Entry(data_frame)
-name_entry_box.grid(row=0, column=3, padx=10, pady=10)
-
-stock_label = Label(data_frame, text="Medicine Stock  : ")
-stock_label.grid(row=1, column=0, padx=10, pady=10)
-stock_label.configure(background=background_color)
-
-stock_entry_box = Entry(data_frame)
-stock_entry_box.grid(row=1, column=1, padx=10, pady=10)
-
-price_label = Label(data_frame, text="Medicine Price  : ")
-price_label.grid(row=1, column=2, padx=10, pady=10)
-price_label.configure(background=background_color)
-
-price_entry_box = Entry(data_frame)
-price_entry_box.grid(row=1, column=3, padx=10, pady=10)
-
-# DATABASE TREE Stuff -------------------------------------------------------------------------------------------------
-'''
-# Move Row Up
-def up():
-    rows = database_tree.selection()
-    for row in rows:
-        database_tree.move(row, database_tree.parent(row), database_tree.index(row) - 1)
-
-
-# Move Row Down
-def down():
-    rows = database_tree.selection()
-    for row in reversed(rows):
-        database_tree.move(row, database_tree.parent(row), database_tree.index(row) + 1)
-'''
-
-
-# DATABASE TREE Stuff ----------------------------------------------------------------------------------------------
 # Remove one record
+
+
 def remove_one():
     try:
         x = database_tree.selection()[0]
@@ -343,23 +375,6 @@ def remove_one():
         messagebox.showinfo("Error", "You have not selected a row to remove")
 
 
-# DATABASE TREE Stuff ---------------------------------------------------------------------------------------------
-
-'''# Remove Many records
-def remove_many():
-    x = database_tree.selection()
-    for record in x:
-        database_tree.delete(record)
-'''
-
-'''# Remove all records
-def remove_all():
-    for record in database_tree.get_children():
-        database_tree.delete(record)
-'''
-
-
-# DATABASE TREE Stuff ------------------------------------------------------------------------------------------------
 # Clear entry boxes
 def clear_entries():
     # Clear entry boxes
@@ -491,8 +506,42 @@ def add_record():
     # Run to pull data from database on start
     query_database()
 
+#  -------------------------------------------------</Database Treeview functions>--------------------------------------
+#  -------------------------------------------------<Data_frame Widgets>------------------------------------------------
 
-# DATABASE TREE Stuff -------------------------------------------------------------------------------------------------
+# Add Record Entry Boxes
+
+
+id_label = Label(data_frame, text="ID  : ")
+id_label.grid(row=0, column=0, padx=10, pady=10)
+id_label.configure(background=background_color)
+
+id_entry_box = Entry(data_frame)
+id_entry_box.grid(row=0, column=1, padx=10, pady=10)
+
+name_label = Label(data_frame, text="Medicine Name  : ")
+name_label.grid(row=0, column=2, padx=10, pady=10)
+name_label.configure(background=background_color)
+
+name_entry_box = Entry(data_frame)
+name_entry_box.grid(row=0, column=3, padx=10, pady=10)
+
+stock_label = Label(data_frame, text="Medicine Stock  : ")
+stock_label.grid(row=1, column=0, padx=10, pady=10)
+stock_label.configure(background=background_color)
+
+stock_entry_box = Entry(data_frame)
+stock_entry_box.grid(row=1, column=1, padx=10, pady=10)
+
+price_label = Label(data_frame, text="Medicine Price  : ")
+price_label.grid(row=1, column=2, padx=10, pady=10)
+price_label.configure(background=background_color)
+
+price_entry_box = Entry(data_frame)
+price_entry_box.grid(row=1, column=3, padx=10, pady=10)
+
+#  -------------------------------------------------</Data_frame Widgets>-----------------------------------------------
+#  -------------------------------------------------<Button_frame Widgets>----------------------------------------------
 
 # Add Buttons
 
@@ -507,21 +556,14 @@ remove_one_button.grid(row=0, column=3, padx=10, pady=10)
 
 select_record_button = Button(button_frame, text="Clear Entry Boxes", command=clear_entries)
 select_record_button.grid(row=0, column=7, padx=10, pady=10)
-
+#  -------------------------------------------------</Button_frame Widgets>---------------------------------------------
+#  -------------------------------------------------<Database_tree PS>--------------------------------------------------
 # Bind the treeview
 database_tree.bind("<ButtonRelease-1>", select_record)
 
 query_database()
-
-# Search Frame ---------------------------------------------------------------------------
-search_label = Label(search_frame, text='Search item  : ')
-search_label.grid(row=0, column=0, padx=20, pady=20)
-search_label.config(background=background_color)
-search_box = Entry(search_frame)
-search_box.grid(row=0, column=1, padx=20, pady=20)
-Label1 = Label(search_frame, text='')
-Label1.grid(row=1, column=0)
-Label1.config(background=background_color)
+#  -------------------------------------------------</Database_tree PS>-------------------------------------------------
+#  -------------------------------------------------<Search_frame Functions>--------------------------------------------
 
 
 def search_now():
@@ -562,56 +604,74 @@ def search_now():
     conn.close()
 
     return
+#  -------------------------------------------------</Search_frame Functions>-------------------------------------------
+#  -------------------------------------------------<Search_frame Widgets>----------------------------------------------
 
 
+search_label = Label(search_frame, text='Search item  : ')
+search_label.grid(row=0, column=0, padx=20, pady=20)
+search_label.config(background=background_color)
+search_box = Entry(search_frame)
+search_box.grid(row=0, column=1, padx=20, pady=20)
+Label1 = Label(search_frame, text='')
+Label1.grid(row=1, column=0)
+Label1.config(background=background_color)
 search_button = Button(search_frame, text='Search Now', command=search_now)
 search_button.grid(row=0, column=3, pady=20, padx=20)
+#  -------------------------------------------------</Search_frame Widgets>---------------------------------------------
+#  -------------------------------------------------<Account Tree view Options>-----------------------------------------
+# Create a Treeview Frame
 
-# Account Search Frame ---------------------------------------------------------------------
+# Create a Treeview Scrollbar
+account_tree_scroll = Scrollbar(account_tree_frame)
+account_tree_scroll.pack(side=RIGHT, fill=Y)
+
+# Create The Treeview
+account_tree = ttk.Treeview(account_tree_frame, yscrollcommand=account_tree_scroll.set, selectmode="extended")
+account_tree.pack()
+
+# Configure the Scrollbar
+account_tree_scroll.config(command=account_tree.yview)
+
+# Define Our Columns
+account_tree['columns'] = ("ID", "Medicine Name", "Medicine Count", "Medicine Price")
+
+# Format Our Columns
+account_tree.column("#0", width=0, stretch=NO)
+account_tree.column("ID", anchor=CENTER, width=100)
+account_tree.column("Medicine Name", anchor=W, width=140)
+account_tree.column("Medicine Count", anchor=CENTER, width=140)
+account_tree.column("Medicine Price", anchor=W, width=140)
+
+# Create Headings
+account_tree.heading("#0", text="", anchor=W)
+account_tree.heading("ID", text="ID", anchor=W)
+account_tree.heading("Medicine Name", text="Medicine Name", anchor=W)
+account_tree.heading("Medicine Count", text="Medicine Count", anchor=CENTER)
+account_tree.heading("Medicine Price", text="Medicine Price", anchor=CENTER)
+
+# Create Striped Row Tags
+account_tree.tag_configure('oddrow', background="white")
+account_tree.tag_configure('evenrow', background="lightblue")
 
 basket_id_count = []
+#  -------------------------------------------------</Account Tree view Options>----------------------------------------
+#  -------------------------------------------------<Account Tree view Functions>---------------------------------------
 
 
 def query_account_database():
-    count1 = 0
 
-    for record in basket_id_count:
-        if count1 % 2 == 0:
-            account_tree.insert(parent='', index='end', iid=count1, text='',
-                                values=(record[0], record[1], record[2], record[3]),
+    for i in range(len(basket_id_count)):
+        if i % 2 == 0:
+            account_tree.insert(parent='', index='end', iid=i, text='',
+                                values=(basket_id_count[i][0], basket_id_count[i][1], basket_id_count[i][2],
+                                        basket_id_count[i][3]),
                                 tags=('evenrow',))
         else:
-            account_tree.insert(parent='', index='end', iid=count1, text='',
-                                values=(record[0], record[1], record[2], record[3]),
+            account_tree.insert(parent='', index='end', iid=i, text='',
+                                values=(basket_id_count[i][0], basket_id_count[i][1], basket_id_count[i][2],
+                                        basket_id_count[i][3]),
                                 tags=('oddrow',))
-        # increment counter
-        count1 += 1
-
-
-account_search_label = Label(account_search_frame, text='Search  : ')
-account_search_label.grid(row=0, column=0, padx=20, pady=20)
-account_search_label.configure(background=background_color)
-
-account_search_box = Entry(account_search_frame)
-account_search_box.grid(row=0, column=1, padx=20, pady=20)
-
-account_count_label = Label(account_search_frame, text='Count  : ')
-account_count_label.grid(row=1, column=0, padx=20, pady=20)
-account_count_label.configure(background=background_color)
-
-account_count_box = Entry(account_search_frame)
-account_count_box.grid(row=1, column=1, padx=20, pady=20)
-
-Label2 = Label(account_search_frame, text='')
-Label2.grid(row=3, column=0)
-Label2.configure(background=background_color)
-
-accounting_patient_fee_label = Label(account_search_frame, text="Patient Fee  : ")
-accounting_patient_fee_label.grid(row=0, column=2, padx=20, pady=20)
-accounting_patient_fee_label.configure(background=background_color)
-
-account_patient_fee_box = Entry(account_search_frame)
-account_patient_fee_box.grid(row=0, column=3, padx=20, pady=20)
 
 
 def account_search_now(event):
@@ -661,11 +721,6 @@ def account_search_now(event):
 
     query_account_database()
 
-    # Add our data to the screen
-
-    # for record in records:
-
-    # Close our connection
     conn.close()
     return
 
@@ -674,9 +729,39 @@ def account_remove_one():
     x = account_tree.selection()[0]
     account_tree.delete(x)
     basket_id_count.pop(int(x))
+#  -------------------------------------------------</Account Tree view Functions>--------------------------------------
+#  -------------------------------------------------<Account_search_frame Widgets>--------------------------------------
 
 
-# accounting window -------------------------------------------
+account_search_label = Label(account_search_frame, text='Search  : ')
+account_search_label.grid(row=0, column=0, padx=20, pady=20)
+account_search_label.configure(background=background_color)
+
+account_search_box = Entry(account_search_frame)
+account_search_box.grid(row=0, column=1, padx=20, pady=20)
+
+account_count_label = Label(account_search_frame, text='Count  : ')
+account_count_label.grid(row=1, column=0, padx=20, pady=20)
+account_count_label.configure(background=background_color)
+
+account_count_box = Entry(account_search_frame)
+account_count_box.grid(row=1, column=1, padx=20, pady=20)
+
+Label2 = Label(account_search_frame, text='')
+Label2.grid(row=3, column=0)
+Label2.configure(background=background_color)
+
+account_patient_fee_label = Label(account_search_frame, text="Patient Fee  : ")
+account_patient_fee_label.grid(row=0, column=2, padx=20, pady=20)
+account_patient_fee_label.configure(background=background_color)
+
+account_patient_fee_box = Entry(account_search_frame)
+account_patient_fee_box.grid(row=0, column=3, padx=20, pady=20)
+
+#  -------------------------------------------------</Account_search_frame Widgets>-------------------------------------
+#  -------------------------------------------------<Account_Options_frame Functions>-----------------------------------
+
+
 def account_account_now():
     try:
         fee = int(account_patient_fee_box.get())
@@ -688,8 +773,12 @@ def account_account_now():
     #    account_search_button.config(state='disabled')
     account_remove_one_button.config(state='disabled')
     account_patient_fee_box.config(state='disabled')
+    #  -------------------------------------------------<Accounting_window>---------------------------------------------
+
     accounting_window = Tk()
 
+    #  -------------------------------------------------</Accounting_window>--------------------------------------------
+    #  -------------------------------------------------<Accounting_window_frames>--------------------------------------
     accounting_tree_frame = Frame(accounting_window)
     accounting_tree_frame.grid(row=0, column=1, padx=20)
 
@@ -699,9 +788,43 @@ def account_account_now():
     accounting_prices_frame = LabelFrame(accounting_window, text='Accounting Specifics')
     accounting_prices_frame.grid(row=1, column=0, padx=20)
 
+    #  -------------------------------------------------</Accounting_window_frames>-------------------------------------
+    #  -------------------------------------------------<Accounting_tree_options>---------------------------------------
+    # Scroll Options
     accounting_tree_scroll = Scrollbar(accounting_tree_frame)
     accounting_tree_scroll.pack(side=RIGHT, fill=Y)
 
+    # Create The Treeview
+    accounting_tree = ttk.Treeview(accounting_tree_frame, yscrollcommand=accounting_tree_scroll.set,
+                                   selectmode="extended")
+    accounting_tree.pack()
+
+    # Configure the Scrollbar
+    accounting_tree_scroll.config(command=accounting_tree.yview)
+
+    # Define Our Columns
+    accounting_tree['columns'] = ("ID", "Medicine Name", "Medicine Count", '*', "Medicine Price", 'Calculated Price')
+
+    # Format Our Columns
+    accounting_tree.column("#0", width=0, stretch=NO)
+    accounting_tree.column("ID", anchor=CENTER, width=100)
+    accounting_tree.column("Medicine Name", anchor=W, width=140)
+    accounting_tree.column("Medicine Count", anchor=CENTER, width=140)
+    accounting_tree.column("*", anchor=W, width=140)
+    accounting_tree.column("Medicine Price", anchor=W, width=140)
+    accounting_tree.column("Calculated Price", anchor=W, width=140)
+
+    # Create Headings
+    accounting_tree.heading("#0", text="", anchor=W)
+    accounting_tree.heading("ID", text="ID", anchor=W)
+    accounting_tree.heading("Medicine Name", text="Medicine Name", anchor=W)
+    accounting_tree.heading("Medicine Count", text="Medicine Count", anchor=CENTER)
+    accounting_tree.heading("*", text="*", anchor=CENTER)
+    accounting_tree.heading("Medicine Price", text="Medicine Price", anchor=CENTER)
+    accounting_tree.heading("Calculated Price", text="Calculated Price", anchor=CENTER)
+
+    #  -------------------------------------------------</Accounting_tree_options>--------------------------------------
+    #  -------------------------------------------------<Accounting_tree_functions>-------------------------------------
     unique_id = []
     unique_name = []
     unique_count = []
@@ -747,70 +870,11 @@ def account_account_now():
     for i in range(len(unique_id)):
         new_table_data.append([unique_id[i], unique_name[i], unique_count[i], unique_price[i], unique_calc_price[i]])
 
-    # For all lists having the same id , add their price and append it to a list.
-
-    style = ttk.Style()
-
-    # Pick A Theme
-    style.theme_use('default')
-
-    # Configure the Treeview Colors
-    style.configure("Treeview",
-                    background="#D3D3D3",
-                    foreground="black",
-                    rowheight=25,
-                    fieldbackground="#D3D3D3")
-
-    # Change Selected Color
-    style.map('Treeview',
-              background=[('selected', "#347083")])
-
-    # Create The Treeview
-    accounting_tree = ttk.Treeview(accounting_tree_frame, yscrollcommand=accounting_tree_scroll.set,
-                                   selectmode="extended")
-    accounting_tree.pack()
-
-    # Configure the Scrollbar
-    accounting_tree_scroll.config(command=accounting_tree.yview)
-
-    # Define Our Columns
-    accounting_tree['columns'] = ("ID", "Medicine Name", "Medicine Count", '*', "Medicine Price", 'Calculated Price')
-
-    # Format Our Columns
-    accounting_tree.column("#0", width=0, stretch=NO)
-    accounting_tree.column("ID", anchor=CENTER, width=100)
-    accounting_tree.column("Medicine Name", anchor=W, width=140)
-    accounting_tree.column("Medicine Count", anchor=CENTER, width=140)
-    accounting_tree.column("*", anchor=W, width=140)
-    accounting_tree.column("Medicine Price", anchor=W, width=140)
-    accounting_tree.column("Calculated Price", anchor=W, width=140)
-
-    # Create Headings
-    accounting_tree.heading("#0", text="", anchor=W)
-    accounting_tree.heading("ID", text="ID", anchor=W)
-    accounting_tree.heading("Medicine Name", text="Medicine Name", anchor=W)
-    accounting_tree.heading("Medicine Count", text="Medicine Count", anchor=CENTER)
-    accounting_tree.heading("*", text="*", anchor=CENTER)
-    accounting_tree.heading("Medicine Price", text="Medicine Price", anchor=CENTER)
-    accounting_tree.heading("Calculated Price", text="Calculated Price", anchor=CENTER)
-
-    count2 = 0
-    # for record in records:
-    # print(record)
-    # [unique_id[i], unique_name[i], unique_count[i], unique_price[i],unique_calc_price[i]]
     for i in range(len(new_table_data)):
-        if count2 % 2 == 0:
-            accounting_tree.insert(parent='', index='end', iid=count2, text='',
-                                   values=(unique_id[i], unique_name[i], unique_count[i], "*", unique_price[i],
-                                           unique_calc_price[i]),
-                                   tags=('evenrow',))
-        else:
-            accounting_tree.insert(parent='', index='end', iid=count2, text='',
-                                   values=(unique_id[i], unique_name[i], unique_count[i], "*", unique_price[i],
-                                           unique_calc_price[i]),
-                                   tags=('oddrow',))
-        # increment counter
-        count2 += 1
+        accounting_tree.insert(parent='', index='end', iid=i, text='',
+                               values=(unique_id[i], unique_name[i], unique_count[i], "*", unique_price[i],
+                                       unique_calc_price[i]),
+                               tags=('evenrow',))
 
     def go_back():
         account_search_box.config(state='normal')
@@ -871,7 +935,6 @@ def account_account_now():
         account_tree.delete(*account_tree.get_children())
         accounting_tree.delete(*accounting_tree.get_children())
         query_database()
-
         basket_id_count.clear()
         unique_id.clear()
         unique_count.clear()
@@ -886,6 +949,8 @@ def account_account_now():
         account_patient_fee_box.config(state='normal')
         accounting_window.destroy()
 
+    #  -------------------------------------------------</Accounting_tree_functions>------------------------------------
+    #  -------------------------------------------------<Accounting_details_widgets>------------------------------------
     drops_total = 0
     for item in unique_calc_price:
         drops_total = drops_total + item
@@ -894,28 +959,27 @@ def account_account_now():
 
     def cash_now(e):
         cash = accounting_detail_given_cash_box.get()
-        accounting_detail_given_cash_box.delete(0,END)
+        accounting_detail_given_cash_box.delete(0, END)
         try:
             cash = int(cash)
         except Exception:
-            messagebox.showinfo('Input Error','Enter an valid integer')
+            messagebox.showinfo('Input Error', 'Enter an valid integer')
             return
 
-        accounting_detail_balance_label = Label(accounting_details_frame, text=f'         Balance  : {total} - {cash} =      ')
+        accounting_detail_balance_label = Label(accounting_details_frame,
+                                                text=f'         Balance  : {total} - {cash} =      ')
         accounting_detail_balance_label.grid(row=2, column=0, padx=20, pady=20)
 
         accounting_detail_balance = Label(accounting_details_frame, text=f'      {total - cash}     ')
         accounting_detail_balance.grid(row=2, column=1, padx=20, pady=20)
 
-
-    # Accounting details frame ------------------------------------------
-    accounting_detail_given_cash_label = Label(accounting_details_frame,text="Cash Given  : ")
+    accounting_detail_given_cash_label = Label(accounting_details_frame, text="Cash Given  : ")
     accounting_detail_given_cash_label.grid(row=0, column=0, padx=20, pady=20)
 
     accounting_detail_given_cash_box = Entry(accounting_details_frame)
     accounting_detail_given_cash_box.grid(row=0, column=1, padx=20, pady=20)
 
-    accounting_detail_given_cash_box.bind('<Return>',cash_now)
+    accounting_detail_given_cash_box.bind('<Return>', cash_now)
 
     accounting_detail_total_label = Label(accounting_details_frame, text='Total Price  : ')
     accounting_detail_total_label.grid(row=1, column=0, padx=20, pady=20)
@@ -929,7 +993,6 @@ def account_account_now():
     accounting_detail_balance = Label(accounting_details_frame, text=" ")
     accounting_detail_balance.grid(row=2, column=1, padx=20, pady=20)
 
-
     accounting_patient_name_label = Label(accounting_details_frame, text="Patient Name: ")
     accounting_patient_name_label.grid(row=3, column=0, padx=20, pady=20)
 
@@ -941,8 +1004,8 @@ def account_account_now():
 
     accounting_commit_button = Button(accounting_details_frame, text='Commit now', command=commit_now)
     accounting_commit_button.grid(row=4, column=1, padx=20, pady=20)
-
-    # Accounting Prices frame ------------------------------------------
+    #  -------------------------------------------------<Accounting_details_widgets>------------------------------------
+    #  -------------------------------------------------<Accounting_prices_widgets>-------------------------------------
 
     count_per_transaction = 0
     for count in unique_count:
@@ -955,7 +1018,8 @@ def account_account_now():
     accounting_detail_drops_total_label = Label(accounting_prices_frame, text=f'Drops Total: {drops_total}')
     accounting_detail_drops_total_label.grid(row=1, column=0, padx=20, pady=20)
 
-    accounting_total_cost_label = Label(accounting_prices_frame, text=f'Total price (Drops + Fee) : {drops_total} + {fee} = {drops_total + fee}')
+    accounting_total_cost_label = Label(accounting_prices_frame,
+                                        text=f'Total price (Drops + Fee) : {drops_total} + {fee} = {drops_total + fee}')
     accounting_total_cost_label.grid(row=2, column=0, padx=20, pady=20)
 
     accounting_total_change_500_label = Label(accounting_prices_frame, text=f'500 : {500 - total} ')
@@ -977,46 +1041,13 @@ def account_account_now():
     accounting_total_change_2500_label = Label(accounting_prices_frame, text=f'2500 :  {2500 - total}')
     accounting_total_change_2500_label.grid(row=7, column=0, padx=20)
     accounting_total_change_2500_label.config(background='yellow')
-
-
-
-
+    #  -------------------------------------------------</Accounting_prices_widgets>------------------------------------
     accounting_window.mainloop()
+    #  -------------------------------------------------</Accounting Window>--------------------------------------------
 
+#  -------------------------------------------------</Account Option frame Functions>-----------------------------------
+#  -------------------------------------------------<Account Option frame Widgets>--------------------------------------
 
-# Create a Treeview Frame
-
-# Create a Treeview Scrollbar
-account_tree_scroll = Scrollbar(account_tree_frame)
-account_tree_scroll.pack(side=RIGHT, fill=Y)
-
-# Create The Treeview
-account_tree = ttk.Treeview(account_tree_frame, yscrollcommand=account_tree_scroll.set, selectmode="extended")
-account_tree.pack()
-
-# Configure the Scrollbar
-account_tree_scroll.config(command=account_tree.yview)
-
-# Define Our Columns
-account_tree['columns'] = ("ID", "Medicine Name", "Medicine Count", "Medicine Price")
-
-# Format Our Columns
-account_tree.column("#0", width=0, stretch=NO)
-account_tree.column("ID", anchor=CENTER, width=100)
-account_tree.column("Medicine Name", anchor=W, width=140)
-account_tree.column("Medicine Count", anchor=CENTER, width=140)
-account_tree.column("Medicine Price", anchor=W, width=140)
-
-# Create Headings
-account_tree.heading("#0", text="", anchor=W)
-account_tree.heading("ID", text="ID", anchor=W)
-account_tree.heading("Medicine Name", text="Medicine Name", anchor=W)
-account_tree.heading("Medicine Count", text="Medicine Count", anchor=CENTER)
-account_tree.heading("Medicine Price", text="Medicine Price", anchor=CENTER)
-
-# Create Striped Row Tags
-account_tree.tag_configure('oddrow', background="white")
-account_tree.tag_configure('evenrow', background="lightblue")
 
 account_search_box.bind('<Return>', account_search_now)
 account_count_box.bind('<Return>', account_search_now)
@@ -1026,18 +1057,18 @@ account_remove_one_button.grid(row=0, column=0, padx=20, pady=20)
 
 account_account_now_button = Button(account_options_frame, text='Account Now', command=account_account_now)
 account_account_now_button.grid(row=0, column=1, padx=20, pady=20)
-
 query_account_database()
+#  -------------------------------------------------</Account Option frame Widgets>-------------------------------------
+#  -------------------------------------------------<Transaction Register Frame Functions>------------------------------
 
-
-
-# Label Frame -------------------------------------------------------------------------------------------------
 
 def transaction_register():
+    #  -------------------------------------------------<Transaction Register Window>-----------------------------------
     transaction_register_window = Tk()
     transaction_register_window.title('Transaction Register')
     transaction_register_window.configure(background=background_color)
-
+    #  -------------------------------------------------</Transaction Register Window>----------------------------------
+    #  -------------------------------------------------<Transaction Register Frames>-----------------------------------
     daily_transaction_tree_frame = Frame(transaction_register_window)
     daily_transaction_tree_frame.grid(row=0, column=0, padx=20, pady=20)
 
@@ -1053,26 +1084,14 @@ def transaction_register():
     all_transaction_tree_frame = Frame(transaction_register_window)
     all_transaction_tree_frame.grid(row=0, column=2, padx=20, pady=20)
 
+    medicine_database_view_tree_frame = Frame(transaction_register_window)
+    medicine_database_view_tree_frame.grid(row=1, column=2, padx=20, pady=20)
+
     button_frame = LabelFrame(transaction_register_window)
     button_frame.grid(row=2, column=0, padx=20, pady=20)
-
-    style = ttk.Style()
-
-    # Pick A Theme
-    style.theme_use('default')
-
-    # Configure the Treeview Colors
-    style.configure("Treeview",
-                    background="#D3D3D3",
-                    foreground="black",
-                    rowheight=25,
-                    fieldbackground="#D3D3D3")
-
-    # Change Selected Color
-    style.map('Treeview',
-              background=[('selected', "#347083")])
-    # -------------------------Daily Transaction
-    # Tree------------------------------------------------------------------------------------------------------------------------------------------------
+    button_frame.configure(background=background_color)
+    #  -------------------------------------------------</Transaction Register Frames>----------------------------------
+    #  -------------------------------------------------<Daily Transaction Tree options>--------------------------------
 
     # Create The Treeview
     daily_transaction_tree_scroll = Scrollbar(daily_transaction_tree_frame)
@@ -1101,8 +1120,8 @@ def transaction_register():
     # Create Striped Row Tags
     daily_transaction_tree.tag_configure('oddrow', background="white")
     daily_transaction_tree.tag_configure('evenrow', background="lightblue")
-    # -------------------------Daily
-    # Tree--------------------------------------------------------------------------------------------------------------------------------------
+    #  -------------------------------------------------</Daily Transaction Tree options>-------------------------------
+    #  -------------------------------------------------<Daily  Tree options>-------------------------------------------
     daily_tree_scroll = Scrollbar(daily_tree_frame)
     daily_tree_scroll.pack(side=RIGHT, fill=Y)
 
@@ -1129,9 +1148,9 @@ def transaction_register():
     # Create Striped Row Tags
     daily_tree.tag_configure('oddrow', background="white")
     daily_tree.tag_configure('evenrow', background="lightblue")
-    # -------------------------Daily
-    # Tree---------------------------------------------------------------------------------------
-    monthly_tree_scroll = Scrollbar(monthly_tree_frame)
+    #  -------------------------------------------------</Daily  Tree options>------------------------------------------
+    #  -------------------------------------------------<Monthly  Tree options>-----------------------------------------
+    monthly_tree_scroll = Scrollbar(yearly_tree_frame)
     monthly_tree_scroll.pack(side=RIGHT, fill=Y)
 
     # Create The Treeview
@@ -1158,8 +1177,8 @@ def transaction_register():
     monthly_tree.tag_configure('oddrow', background="white")
     monthly_tree.tag_configure('evenrow', background="lightblue")
 
-    # -------------------------Monthly
-    # Tree-----------------------------------------------------------------
+    #  -------------------------------------------------</Monthly  Tree options>----------------------------------------
+    #  -------------------------------------------------<Yearly  Tree options>------------------------------------------
     yearly_tree_scroll = Scrollbar(yearly_tree_frame)
     yearly_tree_scroll.pack(side=RIGHT, fill=Y)
 
@@ -1168,7 +1187,7 @@ def transaction_register():
     yearly_tree.pack()
 
     # Configure the Scrollbar
-    monthly_tree_scroll.config(command=yearly_tree.yview)
+    yearly_tree_scroll.config(command=yearly_tree.yview)
 
     # Define Our Columns
     yearly_tree['columns'] = ("Year Date", "Count")
@@ -1187,7 +1206,8 @@ def transaction_register():
     yearly_tree.tag_configure('oddrow', background="white")
     yearly_tree.tag_configure('evenrow', background="lightblue")
 
-    # -------------------------Yearly  Tree--------------------------------------------------------------
+    #  -------------------------------------------------</Yearly  Tree options>-----------------------------------------
+    #  -------------------------------------------------<All Transaction Tree options>----------------------------------
     all_transaction_tree_scroll = Scrollbar(all_transaction_tree_frame)
     all_transaction_tree_scroll.pack(side=RIGHT, fill=Y)
 
@@ -1222,8 +1242,47 @@ def transaction_register():
     # Create Striped Row Tags
     all_transaction_tree.tag_configure('oddrow', background="white")
     all_transaction_tree.tag_configure('evenrow', background="lightblue")
+    #  -------------------------------------------------</All Transaction Tree options>---------------------------------
+    #  -------------------------------------------------<Medicine Database View Tree options>---------------------------
 
+    medicine_database_view_tree_scroll = Scrollbar(medicine_database_view_tree_frame)
+    medicine_database_view_tree_scroll.pack(side=RIGHT, fill=Y)
+
+    # Create The Treeview
+    medicine_database_view_tree = ttk.Treeview(medicine_database_view_tree_frame,
+                                               yscrollcommand=medicine_database_view_tree_scroll.set,
+                                               selectmode="extended")
+    medicine_database_view_tree.pack()
+
+    # Configure the Scrollbar
+    medicine_database_view_tree_scroll.config(command=all_transaction_tree.yview)
+
+    # Define Our Columns
+    medicine_database_view_tree['columns'] = (
+        "ID", "Medicine Name", "Item Count", "Item Price")
+
+    # Format Our Columns
+    medicine_database_view_tree.column("#0", width=0, stretch=NO)
+    medicine_database_view_tree.column("ID", anchor=CENTER, width=200)
+    medicine_database_view_tree.column("Medicine Name", anchor=W, width=140)
+    medicine_database_view_tree.column("Item Count", anchor=W, width=140)
+    medicine_database_view_tree.column("Item Price", anchor=W, width=140)
+
+    # Create Headings
+    medicine_database_view_tree.heading("#0", text="", anchor=W)
+    medicine_database_view_tree.heading("ID", text="ID", anchor=W)
+    medicine_database_view_tree.heading("Medicine Name", text="Medicine Name", anchor=W)
+    medicine_database_view_tree.heading("Item Count", text="Item Count", anchor=W)
+    medicine_database_view_tree.heading("Item Price", text="Item Price", anchor=W)
+
+    # Create Striped Row Tags
+    medicine_database_view_tree.tag_configure('oddrow', background="white")
+    medicine_database_view_tree.tag_configure('evenrow', background="lightblue")
+
+    #  -------------------------------------------------<Medicine Database View Tree options>---------------------------
+    #  -------------------------------------------------<Transaction Register Functions>--------------------------------
     def create_count_sql():
+
         conn = sqlite3.connect('pharmacy.db')
         cursor = conn.cursor()
         cursor.execute("""CREATE TABLE if not exists count_per_transaction(                        
@@ -1245,6 +1304,36 @@ def transaction_register():
         conn.close()
 
     def counting_function_sql():
+        #  -------------------------------------------------<Medicine Database View tree Function>----------------------
+        selected_asc_desc = drop_box_asc_desc.get()
+        if selected_asc_desc == "Ascending":
+            selected_1 = 'ASC'
+        elif selected_asc_desc == "Descending":
+            selected_1 = 'DESC'
+        selected_name_count_price = drop_box_name_count_price.get()
+        if selected_name_count_price == "Name":
+            selected_2 = "medicine_name"
+        elif selected_name_count_price == "Count":
+            selected_2 = "medicine_stock"
+        elif selected_name_count_price == "Price":
+            selected_2 = "medicine_price"
+
+        conn = sqlite3.connect('pharmacy.db')
+        c = conn.cursor()
+        c.execute(f"SELECT * FROM medicine ORDER BY {selected_2} {selected_1}")
+        recordk = c.fetchall()
+        for i in range(len(recordk)):
+            if i % 2 == 0:
+                medicine_database_view_tree.insert(parent='', index='end', iid=i, text='',
+                                                   values=(recordk[i][0], recordk[i][1], recordk[i][2], recordk[i][3]),
+                                                   tags=('evenrow',))
+
+            else:
+                medicine_database_view_tree.insert(parent='', index='end', iid=i, text='',
+                                                   values=(recordk[i][0], recordk[i][1], recordk[i][2], recordk[i][3]),
+                                                   tags=('oddrow',))
+        #  -------------------------------------------------</Medicine Database View tree Function>---------------------
+        #  -------------------------------------------------<All Transaction tree Function>-----------------------------
         conn = sqlite3.connect('pharmacy.db')
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM transactions")
@@ -1269,7 +1358,8 @@ def transaction_register():
         headers = ('Patient Name', 'Date of Transaction', 'Item Names', 'Item Counts', 'Total Price')
         table1 = tabulate(list0, headers, tablefmt="grid")
         print(table1)
-
+        #  -------------------------------------------------</All Transaction tree Function>----------------------------
+        #  -------------------------------------------------<Count per Transaction tree Function>-----------------------
         conn = sqlite3.connect('pharmacy.db')
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM count_per_transaction")
@@ -1303,7 +1393,8 @@ def transaction_register():
                     daily_transaction_count = daily_transaction_count + int(
                         x[1])  # Tuples (date , total count in that date )
             daily_transaction_counts.append(daily_transaction_count)
-
+        #  -------------------------------------------------</Count per Transaction tree Function>----------------------
+        #  -------------------------------------------------<Daily_count tree Function>--------------------------------
         print('Daily transaction counts : ', daily_transaction_counts)
         for i in range(len(unique_time)):
             conn = sqlite3.connect('pharmacy.db')
@@ -1344,17 +1435,14 @@ def transaction_register():
             if x[0][6:] not in unique_year_time:
                 unique_year_time.append(x[0][6:])
 
-        print('unique month time ', unique_month_time)
-        print('Unique year time ', unique_year_time)
-
         for date in unique_month_time:
             monthly_count = 0
             for x in record1:  # Tuples (Month , Total count in that month) created
                 if x[0][3:] == date:
                     monthly_count = monthly_count + int(x[1])
             monthly_counts.append(monthly_count)
-
-        print('monthly counts ', monthly_counts)
+        #  -------------------------------------------------</Daily count tree Function>--------------------------------
+        #  -------------------------------------------------<Monthly tree Function>--------------------------------
         for i in range(len(unique_month_time)):
             conn = sqlite3.connect('pharmacy.db')
             cursor = conn.cursor()
@@ -1390,11 +1478,12 @@ def transaction_register():
                 if x[0][6:] == date:
                     year_count = year_count + int(x[1])
             yearly_count.append(year_count)
-
+        #  -------------------------------------------------</Monthly tree Function>--------------------------------
+        #  -------------------------------------------------<Yearly tree Function>--------------------------------
         for i in range(len(unique_year_time)):
             conn = sqlite3.connect('pharmacy.db')
             cursor = conn.cursor()
-            sql = "INSERT INTO yearly_count VALUES ( ? , ? )"  # Tuples added to monthly_count
+            sql = "INSERT INTO yearly_count VALUES ( ? , ? )"
             val = (unique_year_time[i], yearly_count[i])
             cursor.execute(sql, val)
             conn.commit()
@@ -1418,6 +1507,8 @@ def transaction_register():
         headers = ('Date of transaction', 'Count')
         table4 = tabulate(list4, headers, tablefmt="grid")
         print(table4)
+        #  -------------------------------------------------</Monthly tree Function>--------------------------------
+        #  -------------------------------------------------<Yearly tree Function>--------------------------------
 
     def delete_counting_function_sql():
         conn = sqlite3.connect('pharmacy.db')
@@ -1429,29 +1520,8 @@ def transaction_register():
         conn.close()
         return
 
-    '''
-    def input_values(date,count):
-        conn = sqlite3.connect('pharmacy.db')
-        cursor = conn.cursor()
-        sql = "INSERT INTO count_per_transaction VALUES ( ? , ? )"                    # Tuples inserted into daily_count
-        val = (date,count)
-        cursor.execute(sql,val)
-        conn.commit()
-        conn.close()
-    '''
-
-    '''conn = sqlite3.connect('pharmacy.db')
-    cursor = conn.cursor()
-    cursor.execute('DROP TABLE count_per_transaction')
-    conn.commit()
-    conn.close()
-    '''
-    # delete_counting_function_sql()
-    create_count_sql()
-    counting_function_sql()
-    delete_counting_function_sql()
-
     def refresh_now():
+        medicine_database_view_tree.delete(*medicine_database_view_tree.get_children())
         all_transaction_tree.delete(*all_transaction_tree.get_children())
         daily_transaction_tree.delete(*daily_transaction_tree.get_children())
         daily_tree.delete(*daily_tree.get_children())
@@ -1461,32 +1531,29 @@ def transaction_register():
         counting_function_sql()
         delete_counting_function_sql()
 
+    #  -------------------------------------------------<Button Frame Widgets>------------------------------------------
+
+    drop_box_asc_desc = ttk.Combobox(button_frame, state="readonly", value=["Ascending", "Descending"])
+    drop_box_asc_desc.current(0)
+    drop_box_asc_desc.grid(row=2, column=0)
+    drop_box_name_count_price = ttk.Combobox(button_frame, state="readonly", value=["Name", "Count", "Price"])
+    drop_box_name_count_price.current(1)
+    drop_box_name_count_price.grid(row=1, column=0)
+    create_count_sql()
+    counting_function_sql()
+    delete_counting_function_sql()
+
     refresh_now_button = Button(button_frame, text='Refresh Now', command=refresh_now)
     refresh_now_button.grid(row=0, column=0, padx=20, pady=20)
-    '''while True:
-        date = input('Enter the date: ')
-        count = input('Enter the count: ')
-        input_values(date,count)
-        counting_function_sql()
-        delete_counting_function_sql()'''
-
+    #  -------------------------------------------------<Button Frame Widgets>------------------------------------------
     transaction_register_window.mainloop()
+#  -------------------------------------------------</Transaction Register Frame Functions>-----------------------------
+#  -------------------------------------------------<Transaction Register Frame Widgets>--------------------------------
 
 
 transaction_register_button = Button(transaction_register_frame, text='Open Transaction Register',
                                      command=transaction_register)
 transaction_register_button.grid(row=0, column=0, padx=20, pady=20)
-
-main_window.mainloop()
-
-'''
-remove_all_button = Button(button_frame, text="Remove All Records", command=remove_all)
-remove_all_button.grid(row=0, column=2, padx=10, pady=10)
-remove_many_button = Button(button_frame, text="Remove Many Selected", command=remove_many)
-remove_many_button.grid(row=0, column=4, padx=10, pady=10)
-move_up_button = Button(button_frame, text="Move Up", command=up)
-move_up_button.grid(row=0, column=5, padx=10, pady=10)
-move_down_button = Button(button_frame, text="Move Down", command=down)
-move_down_button.grid(row=0, column=6, padx=10, pady=10)
-
-'''
+#  -------------------------------------------------</Transaction Register Frame Widgets>-------------------------------
+#  -------------------------------------------------</Main Window>------------------------------------------------------
+root.mainloop()
